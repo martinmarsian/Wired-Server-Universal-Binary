@@ -95,7 +95,23 @@ The app will automatically migrate data from the old location, create the system
 
 ### Known Limitations
 
-- **External volumes (TCC)**: If your files directory is on an external volume, macOS may restrict the server's access due to Transparency, Consent & Control (TCC). If the server cannot list files on the volume, grant **Full Disk Access** to `/Library/Wired/wired` in **System Settings → Privacy & Security → Full Disk Access**.
+#### External Drives Not Supported as Files Directory (macOS 15 and later)
+
+Due to macOS TCC (Transparency, Consent & Control) restrictions, the files directory **cannot be located on an external drive** on macOS 15 (Sequoia) and later, including macOS 26 (Tahoe).
+
+The Wired server runs as a LaunchDaemon under a dedicated system service account. This account operates outside any user session and therefore has no user-level TCC grants. **Granting Full Disk Access to `/Library/Wired/wired` in System Settings does not resolve this on macOS 15 and later** — macOS no longer applies user-granted TCC permissions to binaries running in the system domain.
+
+On macOS 12 (Monterey), 13 (Ventura), and 14 (Sonoma), granting Full Disk Access to `/Library/Wired/wired` in System Settings may still allow access to external drives.
+
+**Recommendation:** Keep the files directory on the system volume, e.g. `/Library/Wired/data/files` (the default).
+
+---
+
+#### Configuration Profiles (mobileconfig) No Longer Work (macOS 15 and later)
+
+Installing a `.mobileconfig` profile to grant TCC permissions to the Wired server binary **no longer works on macOS 15 (Sequoia) and later**, including macOS 26 (Tahoe). Apple now requires supervised MDM enrollment (Apple Business Manager / Apple School Manager) for TCC configuration profiles to take effect. Manually installed profiles are silently ignored for TCC purposes.
+
+On macOS 12–14, manually installed `.mobileconfig` profiles may still work for granting TCC permissions.
 
 ---
 
