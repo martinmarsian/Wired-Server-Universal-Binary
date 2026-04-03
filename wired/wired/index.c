@@ -133,7 +133,61 @@ static void wd_index_create_tables(void) {
 #pragma mark -
 
 static void wd_index_update_index(wi_timer_t *timer) {
+	wi_dictionary_t		*results;
+	wi_time_interval_t	interval;
+
+	/* If the pre-computed index (written by rebuild-index.sh as the logged-in
+	 * user) is still within the configured index-time window, trust it and skip
+	 * re-indexing.  Without this guard the daemon would DELETE the good index
+	 * and replace it with 0 files when the files directory is on a removable
+	 * volume that macOS TCC denies to background daemon processes. */
+	if(wd_index_time > 0.0) {
+		results = wi_sqlite3_execute_statement(wd_database,
+			WI_STR("SELECT date FROM index_metadata"), NULL);
+
+		if(results && wi_dictionary_count(results) > 0) {
+			interval = wi_date_time_interval_since_now(wi_date_with_sqlite3_string(
+				wi_dictionary_data_for_key(results, WI_STR("date"))));
+
+			if(interval < wd_index_time) {
+				wi_log_info(WI_STR("Skipping periodic re-index: pre-computed index is %.2f seconds old"), interval);
+				return;
+			}
+		}
+	}
+
 	wd_index_index_files(false);
+}
+
+
+
+void wd_index_index_files_root(void) {
+	wi_dictionary_t		*results;
+	wi_time_interval_t	interval;
+
+	/* If a fresh pre-computed index exists (written by rebuild-index.sh running
+	 * as the logged-in user, which has TCC access to removable volumes), use it
+	 * and return early.  The macOS kernel MAC framework denies opendir() with
+	 * EPERM for LaunchDaemon processes on removable volumes even when uid=0, so
+	 * any attempt to index here would overwrite a good pre-computed result with
+	 * 0 files.  Do NOT fall through to wd_index_thread — wd_index_index_files()
+	 * will handle the stale-cache case via a background thread after user switch. */
+	results = wi_sqlite3_execute_statement(wd_database,
+		WI_STR("SELECT date FROM index_metadata"), NULL);
+
+	if(results && wi_dictionary_count(results) > 0) {
+		interval = wi_date_time_interval_since_now(wi_date_with_sqlite3_string(
+			wi_dictionary_data_for_key(results, WI_STR("date"))));
+
+		if(interval < 300.0) {
+			wi_log_info(WI_STR("Using pre-indexed files (%.2f seconds old)"), interval);
+			return;
+		}
+	}
+
+	/* No fresh pre-computed index found.  Leave the database as-is; the normal
+	 * startup path (wd_index_index_files) will attempt to rebuild after the
+	 * process switches to the service user. */
 }
 
 
@@ -142,17 +196,17 @@ void wd_index_index_files(wi_boolean_t startup) {
 	wi_dictionary_t		*results;
 	wi_time_interval_t	interval, index_time;
 	wi_boolean_t		index = true;
-	
+
 	if(startup) {
 		results = wi_sqlite3_execute_statement(wd_database, WI_STR("SELECT date, files_count, directories_count, files_size "
 																   "FROM index_metadata"), NULL);
-		
+
 		if(results) {
 			if(wi_dictionary_count(results) > 0) {
 				interval = wi_date_time_interval_since_now(wi_date_with_sqlite3_string(
 					wi_dictionary_data_for_key(results, WI_STR("date"))));
 				index_time = (wd_index_time > 0.0) ? wd_index_time : 3600.0;
-				
+
 				if(interval < index_time) {
 					wd_index_files_count		= wi_number_integer(wi_dictionary_data_for_key(results, WI_STR("files_count")));
 					wd_index_directories_count	= wi_number_integer(wi_dictionary_data_for_key(results, WI_STR("directories_count")));
@@ -170,17 +224,58 @@ void wd_index_index_files(wi_boolean_t startup) {
 						wd_files_string_for_bytes(wd_index_files_size),
 						wd_index_files_size,
 						interval);
-					
+
 					wd_trackers_register();
-					
+
 					index = false;
 				}
 			}
 		} else {
 			wi_log_fatal(WI_STR("Could not execute database statement: %m"));
 		}
+	} else {
+		/* Non-startup path (SIGUSR2 / manual index request):
+		 * Check for a fresh pre-computed index written by rebuild-index.sh
+		 * running as the logged-in user (which has TCC access to removable
+		 * volumes).  If the index was written within the last 60 seconds,
+		 * reload the in-memory counters and broadcast the updated server info
+		 * without spawning wd_index_thread — that thread would DELETE the good
+		 * index and replace it with 0 files because macOS TCC denies opendir()
+		 * on external volumes for background LaunchDaemon processes. */
+		results = wi_sqlite3_execute_statement(wd_database,
+			WI_STR("SELECT date, files_count, directories_count, files_size FROM index_metadata"), NULL);
+
+		if(results && wi_dictionary_count(results) > 0) {
+			interval = wi_date_time_interval_since_now(wi_date_with_sqlite3_string(
+				wi_dictionary_data_for_key(results, WI_STR("date"))));
+
+			wi_log_info(WI_STR("Pre-computed index metadata: date=%@, age=%.2f s"),
+				wi_dictionary_data_for_key(results, WI_STR("date")),
+				interval);
+
+			if(interval < 60.0) {
+				wd_index_files_count		= wi_number_integer(wi_dictionary_data_for_key(results, WI_STR("files_count")));
+				wd_index_directories_count	= wi_number_integer(wi_dictionary_data_for_key(results, WI_STR("directories_count")));
+				wd_index_files_size			= wi_number_int64(wi_dictionary_data_for_key(results, WI_STR("files_size")));
+
+				wi_log_info(WI_STR("Reloaded pre-indexed files: %u %s and %u %s for a total of %@ (%.2f seconds old)"),
+					wd_index_files_count,
+					wd_index_files_count == 1
+						? "file"
+						: "files",
+					wd_index_directories_count,
+					wd_index_directories_count == 1
+						? "directory"
+						: "directories",
+					wd_files_string_for_bytes(wd_index_files_size),
+					interval);
+
+				wd_broadcast_message(wd_server_info_message());
+				index = false;
+			}
+		}
 	}
-	
+
 	if(index) {
 		if(!wi_thread_create_thread_with_priority(wd_index_thread, wi_number_with_bool(startup), 0.0))
 			wi_log_fatal(WI_STR("Could not create an index thread: %m"));
@@ -191,30 +286,88 @@ void wd_index_index_files(wi_boolean_t startup) {
 
 static void wd_index_thread(wi_runtime_instance_t *argument) {
 	wi_pool_t					*pool;
+	wi_fsenumerator_t			*probe;
+	wi_string_t					*resolved_files;
+	wi_string_t					*probe_path;
+	wi_fsenumerator_status_t	probe_status;
 	wi_time_interval_t			interval;
 	wi_boolean_t				startup = wi_number_bool(argument);
-	
+
 	pool = wi_pool_init(wi_pool_alloc());
-	
+
 	if(wi_lock_trylock(wd_index_lock)) {
+		/* Probe whether the files directory is accessible before clearing the
+		 * index.  On macOS, LaunchDaemon processes are denied opendir() on
+		 * external volumes by TCC (errno EPERM) even when running as root.
+		 * fts_open() (used by wi_fs_enumerator_at_path) is lazy — opendir()
+		 * only happens on the first fts_read() call.  We must therefore call
+		 * wi_fsenumerator_get_next_path() once to actually trigger opendir().
+		 * If the probe fails, keep the existing index intact so we don't
+		 * replace valid data with 0 files. */
+		resolved_files = wi_string_by_resolving_aliases_in_path(wd_files);
+		probe = wi_fs_enumerator_at_path(resolved_files);
+
+		if(probe) {
+			probe_path   = NULL;
+			probe_status = wi_fsenumerator_get_next_path(probe, &probe_path);
+			wi_release(probe);
+
+			if(probe_status == WI_FSENUMERATOR_ERROR) {
+				wi_dictionary_t		*meta;
+
+				wi_log_warn(WI_STR("Cannot enumerate \"%@\": %m — skipping re-index to preserve existing data"),
+					resolved_files);
+
+				/* Reload in-memory counters from whatever pre-computed metadata is
+				 * available.  The daemon cannot index the volume itself (TCC EPERM),
+				 * so the best we can do is reflect what rebuild-index.sh last wrote. */
+				meta = wi_sqlite3_execute_statement(wd_database,
+					WI_STR("SELECT files_count, directories_count, files_size FROM index_metadata"), NULL);
+
+				if(meta && wi_dictionary_count(meta) > 0) {
+					wd_index_files_count		= wi_number_integer(wi_dictionary_data_for_key(meta, WI_STR("files_count")));
+					wd_index_directories_count	= wi_number_integer(wi_dictionary_data_for_key(meta, WI_STR("directories_count")));
+					wd_index_files_size			= wi_number_int64(wi_dictionary_data_for_key(meta, WI_STR("files_size")));
+
+					wi_log_info(WI_STR("Reloaded from pre-computed index: %u %s and %u %s for a total of %@"),
+						wd_index_files_count,
+						wd_index_files_count == 1 ? "file" : "files",
+						wd_index_directories_count,
+						wd_index_directories_count == 1 ? "directory" : "directories",
+						wd_files_string_for_bytes(wd_index_files_size));
+				}
+
+				wd_broadcast_message(wd_server_info_message());
+				wi_lock_unlock(wd_index_lock);
+				wi_release(pool);
+				return;
+			}
+		} else {
+			wi_log_warn(WI_STR("Cannot open \"%@\": %m — skipping re-index to preserve existing data"),
+				resolved_files);
+			wi_lock_unlock(wd_index_lock);
+			wi_release(pool);
+			return;
+		}
+
 		wi_log_info(WI_STR("Indexing files..."));
-		
+
 		interval					= wi_time_interval();
 		wd_index_files_count		= 0;
 		wd_index_directories_count	= 0;
 		wd_index_files_size			= 0;
 		wd_index_level				= 0;
-		
+
 		wd_index_dictionary = wi_dictionary_init_with_capacity_and_callbacks(wi_mutable_dictionary_alloc(), 0,
 			wi_dictionary_null_key_callbacks, wi_dictionary_default_value_callbacks);
-		
+
 		if(!wi_sqlite3_execute_statement(wd_database, WI_STR("DELETE FROM `index`"), NULL))
 			wi_log_error(WI_STR("Could not execute database statement: %m"));
-		
+
 		// if(!wi_sqlite3_execute_statement(wd_database, WI_STR("PRAGMA synchronous=OFF"), NULL))
 		// 	wi_log_error(WI_STR("Could not execute database statement: %m"));
-		
-		wd_index_index_path(wi_string_by_resolving_aliases_in_path(wd_files), NULL);
+
+		wd_index_index_path(resolved_files, NULL);
 		
 		wi_log_info(WI_STR("Indexed %u %s and %u %s for a total of %@ (%llu bytes) in %.2f seconds"),
 			wd_index_files_count,

@@ -43,6 +43,17 @@
 - (void)applicationDidFinishLaunching:(NSNotification *)aNotification
 {
     [self.settingsController showWindow:self];
+    dispatch_async(dispatch_get_main_queue(), ^{
+        [[self.settingsController window] orderFrontRegardless];
+        [NSApp activate];
+    });
+}
+
+- (BOOL)applicationShouldHandleReopen:(NSApplication *)sender hasVisibleWindows:(BOOL)flag {
+    [self.settingsController showWindow:self];
+    [[self.settingsController window] orderFrontRegardless];
+    [NSApp activate];
+    return YES;
 }
 
 - (BOOL)applicationShouldTerminateAfterLastWindowClosed:(NSApplication *)theApplication {

@@ -194,7 +194,6 @@ int main(int argc, const char **argv) {
 			case 'x':
 				daemonize = false;
 				change_directory = false;
-				switch_user = false;
 				break;
 			
 			case '?':
@@ -272,10 +271,18 @@ int main(int argc, const char **argv) {
 	
 	wi_log_info(WI_STR("Starting Wired version %s (%x)"), WD_VERSION, WI_REVISION);
 	
+	/* Index files as root before dropping privileges.
+	 * macOS TCC refuses kTCCServiceSystemPolicyRemovableVolumes for non-root
+	 * processes in background sessions (LaunchDaemon).  Running the initial
+	 * index here, while still root, bypasses that restriction.
+	 * wd_index_index_files(true) called after startup will find a fresh index
+	 * in the database and skip re-indexing. */
+	wd_index_index_files_root();
+
 	if(switch_user) {
 		uid = wi_config_uid_for_name(wd_config, WI_STR("user"));
 		gid = wi_config_uid_for_name(wd_config, WI_STR("group"));
-	
+
 		wi_switch_user(uid, gid);
 	}
 	
