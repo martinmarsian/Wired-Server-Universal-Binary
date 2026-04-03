@@ -14,6 +14,9 @@ CONF_GROUP=$(grep -m1 '^group = ' "/Library/Wired/data/etc/wired.conf" 2>/dev/nu
 [ -z "$CONF_USER"  ] && CONF_USER="wired"
 [ -z "$CONF_GROUP" ] && CONF_GROUP="wired"
 
+# ── Remove PPPC TCC profile if installed ──────────────────────────────────────
+profiles remove -identifier "fr.read-write.WiredServer.tcc" 2>/dev/null || true
+
 # ── Stop and remove the LaunchDaemon ──────────────────────────────────────────
 /bin/launchctl disable "system/${LABEL}" 2>/dev/null || true
 /bin/launchctl bootout "system/${LABEL}" 2>/dev/null || true

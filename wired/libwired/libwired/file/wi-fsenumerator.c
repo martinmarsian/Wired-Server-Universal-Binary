@@ -109,8 +109,17 @@ static void _wi_fsenumerator_dealloc(wi_runtime_instance_t *instance) {
 
 wi_fsenumerator_status_t wi_fsenumerator_get_next_path(wi_fsenumerator_t *fsenumerator, wi_string_t **path) {
 	while((fsenumerator->ftsent = wi_fts_read(fsenumerator->fts))) {
-		if(fsenumerator->ftsent->fts_level == 0)
+		if(fsenumerator->ftsent->fts_level == 0) {
+			/* Silently skipping DNR/ERR at level 0 would hide the real error.
+			 * Propagate it so callers can log a meaningful message. */
+			if(fsenumerator->ftsent->fts_info == WI_FTS_DNR ||
+			   fsenumerator->ftsent->fts_info == WI_FTS_ERR) {
+				*path = wi_string_with_cstring(fsenumerator->ftsent->fts_path);
+				wi_error_set_errno(fsenumerator->ftsent->fts_errno);
+				return WI_FSENUMERATOR_ERROR;
+			}
 			continue;
+		}
 
 		if(fsenumerator->ftsent->fts_name[0] == '.') {
 			wi_fts_set(fsenumerator->fts, fsenumerator->ftsent, WI_FTS_SKIP);

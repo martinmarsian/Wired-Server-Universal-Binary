@@ -30,6 +30,7 @@ void								wd_index_initialize(void);
 void								wd_index_schedule(void);
 
 void								wd_index_index_files(wi_boolean_t);
+void								wd_index_index_files_root(void);
 
 void								wd_index_add_file(wi_string_t *);
 void								wd_index_delete_file(wi_string_t *);

@@ -88,7 +88,6 @@
 		4C8D34E0151F84E3001A6BF7 /* Updates.tiff in Resources */ = {isa = PBXBuildFile; fileRef = 4C8D34DF151F84E3001A6BF7 /* Updates.tiff */; };
 		4CB57B171779007D006ECB87 /* Settings.xib in Resources */ = {isa = PBXBuildFile; fileRef = 4CB57B151779007D006ECB87 /* Settings.xib */; };
 		4CD34ED91571ACED0054E305 /* Files.png in Resources */ = {isa = PBXBuildFile; fileRef = 4CD34ED81571ACED0054E305 /* Files.png */; };
-		4CE5D55224475A48000333FB /* dsa_pub.pem in Resources */ = {isa = PBXBuildFile; fileRef = 4CE5D55124475A48000333FB /* dsa_pub.pem */; };
 		8EDD0D84E11251D8575DF5F9 /* Pods_Wired_Server.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 06EC7CD68C89255C714CF6A5 /* Pods_Wired_Server.framework */; };
 		B133499321B1BA55004AF77F /* libwired in Resources */ = {isa = PBXBuildFile; fileRef = B133499021B1BA55004AF77F /* libwired */; };
 		B133499B21B1BD8D004AF77F /* WebKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B133499821B1BD8D004AF77F /* WebKit.framework */; };
@@ -1144,7 +1143,6 @@
 				4C8D341B151E9B0B001A6BF7 /* install.sh in Resources */,
 				4C8D341D151E9B0B001A6BF7 /* uninstall.sh in Resources */,
 				4C8D341E151E9B0B001A6BF7 /* update.sh in Resources */,
-				4CE5D55224475A48000333FB /* dsa_pub.pem in Resources */,
 				4C8D3420151E9B1B001A6BF7 /* Wired in Resources */,
 				4C8D34E0151F84E3001A6BF7 /* Updates.tiff in Resources */,
 				4C4A2959151F880C0084E041 /* Console.icns in Resources */,
@@ -1425,7 +1423,7 @@
 				INFOPLIST_FILE = "Wired Server Helper/Wired Server Helper-Info.plist";
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @loader_path/../Frameworks";
 				MACOSX_DEPLOYMENT_TARGET = 10.13;
-				MARKETING_VERSION = 2.5.3;
+				MARKETING_VERSION = 2.5.4;
 				PRODUCT_BUNDLE_IDENTIFIER = "fr.read-write.${PRODUCT_NAME:rfc1034identifier}";
 				"PRODUCT_BUNDLE_IDENTIFIER[sdk=macosx*]" = de.wiredserver.app;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -1465,7 +1463,7 @@
 				INFOPLIST_FILE = "Wired Server Helper/Wired Server Helper-Info.plist";
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @loader_path/../Frameworks";
 				MACOSX_DEPLOYMENT_TARGET = 10.13;
-				MARKETING_VERSION = 2.5.3;
+				MARKETING_VERSION = 2.5.4;
 				PRODUCT_BUNDLE_IDENTIFIER = "fr.read-write.${PRODUCT_NAME:rfc1034identifier}";
 				"PRODUCT_BUNDLE_IDENTIFIER[sdk=macosx*]" = de.wiredserver.app;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -1644,7 +1642,7 @@
 				CODE_SIGN_IDENTITY = "Apple Development";
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 20;
+				CURRENT_PROJECT_VERSION = 21;
 				DEVELOPMENT_TEAM = VGB467J8DZ;
 				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_RESOURCE_ACCESS_AUDIO_INPUT = NO;
@@ -1673,7 +1671,7 @@
 					/usr/lib,
 				);
 				MACOSX_DEPLOYMENT_TARGET = 10.13;
-				MARKETING_VERSION = 2.5.3;
+				MARKETING_VERSION = 2.5.4;
 				PRODUCT_BUNDLE_IDENTIFIER = "fr.read-write.${PRODUCT_NAME:rfc1034identifier}";
 				"PRODUCT_BUNDLE_IDENTIFIER[sdk=macosx*]" = de.wiredserver.app;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -1701,7 +1699,7 @@
 				CODE_SIGN_IDENTITY = "Apple Development";
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 20;
+				CURRENT_PROJECT_VERSION = 21;
 				DEVELOPMENT_TEAM = VGB467J8DZ;
 				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_RESOURCE_ACCESS_AUDIO_INPUT = NO;
@@ -1730,7 +1728,7 @@
 					/usr/lib,
 				);
 				MACOSX_DEPLOYMENT_TARGET = 10.13;
-				MARKETING_VERSION = 2.5.3;
+				MARKETING_VERSION = 2.5.4;
 				PRODUCT_BUNDLE_IDENTIFIER = "fr.read-write.${PRODUCT_NAME:rfc1034identifier}";
 				"PRODUCT_BUNDLE_IDENTIFIER[sdk=macosx*]" = de.wiredserver.app;
 				PRODUCT_NAME = "$(TARGET_NAME)";

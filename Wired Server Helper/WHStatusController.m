@@ -8,7 +8,7 @@
 
 #import "WHStatusController.h"
 
-#define WIRED_RELATEIVE_ROOT_PATH @"~/Library/Wired"
+#define WIRED_RELATEIVE_ROOT_PATH @"/Library/Wired/data"
 
 
 

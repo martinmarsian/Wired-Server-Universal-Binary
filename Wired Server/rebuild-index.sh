@@ -18,7 +18,7 @@ DB="/Library/Wired/data/database.sqlite3"
 [ -f "$DB" ]   || { echo "rebuild-index: $DB not found"; exit 0; }
 
 # Read the configured files path from wired.conf
-FILES_PATH=$(grep -m1 '^files = ' "$CONF" | sed 's/^files = //' | tr -d '[:space:]')
+FILES_PATH=$(grep -m1 '^files = ' "$CONF" | sed 's/^files = //')
 [ -z "$FILES_PATH" ] && { echo "rebuild-index: no files path in wired.conf"; exit 0; }
 
 if [ ! -d "$FILES_PATH" ]; then

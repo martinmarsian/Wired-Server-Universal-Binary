@@ -26,6 +26,8 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
+#import <Security/Authorization.h>
+
 #define	WPWiredStatusDidChangeNotification		@"WPWiredStatusDidChangeNotification"
 
 @class WPError;
@@ -34,7 +36,8 @@
 	NSString									*_rootPath;
 	NSTimer										*_statusTimer;
 	NSDate										*_launchDate;
-	
+	AuthorizationRef							_authRef;
+
 	BOOL										_running;
 	NSUInteger									_pid;
 }
@@ -43,6 +46,7 @@
 - (NSString *)pathForFile:(NSString *)file;
 
 - (BOOL)isInstalled;
+- (BOOL)hasUpdate;
 - (BOOL)isRunning;
 - (NSDate *)launchDate;
 - (NSString *)installedVersion;

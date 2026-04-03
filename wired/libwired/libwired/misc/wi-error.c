@@ -207,13 +207,9 @@ void wi_error_register(void) {
 
 
 void wi_error_initialize(void) {
-#ifdef HAVE_OPENSSL_SSL_H
-	SSL_load_error_strings();
-#endif
-	
-#ifdef HAVE_OPENSSL_SHA_H
-	ERR_load_crypto_strings();
-#endif
+	/* SSL_load_error_strings() and ERR_load_crypto_strings() were removed
+	 * in OpenSSL 3.x (auto-initialized). They are safe to omit in all
+	 * versions — only human-readable error strings are affected. */
 }
 
 
