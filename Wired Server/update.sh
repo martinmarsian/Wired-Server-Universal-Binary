@@ -17,9 +17,19 @@ install -m 755 "$SOURCE/Wired/wiredctl"         "/Library/Wired" || exit 1
 install -m 755 "$SOURCE/Wired/rebuild-index.sh" "/Library/Wired" 2>/dev/null || true
 install -m 644 "$SOURCE/Wired/wired.xml"        "$DATA"          || exit 1
 
+# ── Re-sign with stable identifier so the installed PPPC profile keeps matching
+codesign --force --sign - --identifier "fr.read-write.WiredServer" \
+    /Library/Wired/wired 2>/dev/null || true
+
 # ── Read service user/group from wired.conf ───────────────────────────────────
 CONF_USER=$(grep -m1 '^user = ' "$DATA/etc/wired.conf" 2>/dev/null | sed 's/^user = //')
 CONF_GROUP=$(grep -m1 '^group = ' "$DATA/etc/wired.conf" 2>/dev/null | sed 's/^group = //')
+[ -z "$CONF_USER"  ] && CONF_USER="wired"
+[ -z "$CONF_GROUP" ] && CONF_GROUP="wired"
+# Sanitize: allow only alphanumeric, underscore, hyphen.
+# Prevents XML plist injection and dscl/chown misuse if wired.conf is modified.
+CONF_USER=$(echo "$CONF_USER"   | tr -cd 'a-zA-Z0-9_-')
+CONF_GROUP=$(echo "$CONF_GROUP" | tr -cd 'a-zA-Z0-9_-')
 [ -z "$CONF_USER"  ] && CONF_USER="wired"
 [ -z "$CONF_GROUP" ] && CONF_GROUP="wired"
 

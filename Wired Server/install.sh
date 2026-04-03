@@ -71,6 +71,12 @@ CONF_USER=$(grep -m1 '^user = ' "$DATA/etc/wired.conf" 2>/dev/null | sed 's/^use
 CONF_GROUP=$(grep -m1 '^group = ' "$DATA/etc/wired.conf" 2>/dev/null | sed 's/^group = //')
 [ -z "$CONF_USER"  ] && CONF_USER="wired"
 [ -z "$CONF_GROUP" ] && CONF_GROUP="wired"
+# Sanitize: allow only alphanumeric, underscore, hyphen.
+# Prevents XML plist injection and dscl/chown misuse if wired.conf is modified.
+CONF_USER=$(echo "$CONF_USER"   | tr -cd 'a-zA-Z0-9_-')
+CONF_GROUP=$(echo "$CONF_GROUP" | tr -cd 'a-zA-Z0-9_-')
+[ -z "$CONF_USER"  ] && CONF_USER="wired"
+[ -z "$CONF_GROUP" ] && CONF_GROUP="wired"
 
 # ── Create macOS group if not already present ─────────────────────────────────
 if ! dscl . -read "/Groups/${CONF_GROUP}" >/dev/null 2>&1; then
@@ -113,13 +119,22 @@ chmod 755 "/Library/Wired/wired" "/Library/Wired/wiredctl" 2>/dev/null || true
 # INSTALL_USER) can read logs, status files, and the config without root.
 chmod -R +a "user:$INSTALL_USER allow read,write,execute,delete,append,readattr,writeattr,readextattr,writeextattr,file_inherit,directory_inherit" "$DATA" 2>/dev/null || true
 
-# ── Best-effort Full Disk Access grant (system TCC.db) ────────────────────────
-# On macOS 15 with SIP enabled this is often rejected for unsigned binaries.
-# The user can grant Full Disk Access permanently via:
-#   System Settings → Privacy & Security → Full Disk Access → add /Library/Wired/wired
-TCC_DB="/Library/Application Support/com.apple.TCC/TCC.db"
-if [ -f "$TCC_DB" ]; then
-    sqlite3 "$TCC_DB" "INSERT OR REPLACE INTO access VALUES('kTCCServiceSystemPolicyAllFiles','/Library/Wired/wired',1,2,4,1,NULL,NULL,0,'UNUSED',NULL,0,$(date +%s));" 2>/dev/null || true
+# ── Sign the daemon binary with a stable identifier ───────────────────────────
+# The PPPC profile (installed below) matches the binary by this identifier.
+# Ad-hoc signing with a fixed identifier makes the profile survive binary updates.
+codesign --force --sign - --identifier "fr.read-write.WiredServer" \
+    /Library/Wired/wired 2>/dev/null || true
+
+# ── Install PPPC profile granting Full Disk Access (system TCC database) ──────
+# macOS TCC blocks LaunchDaemon processes from opendir() on removable/external
+# APFS volumes even as root.  A com.apple.TCC.configuration-profile-policy
+# profile inserts the grant into the SYSTEM TCC database (not the per-user one
+# that System Settings writes), which is what system-domain daemons consult.
+# On macOS 15+ the user may need to approve the profile in:
+#   System Settings → General → VPN & Device Management → Wired Server - Privacy Policy → Install
+PROFILE="$SOURCE/WiredServerTCC.mobileconfig"
+if [ -f "$PROFILE" ]; then
+    profiles install -path "$PROFILE" 2>/dev/null || true
 fi
 
 # ── Stop and remove old LaunchAgent if present (migration from gui domain) ────

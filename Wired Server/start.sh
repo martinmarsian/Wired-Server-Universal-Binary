@@ -33,6 +33,12 @@ CONF_USER=$(grep -m1 '^user = ' "$DATA/etc/wired.conf" 2>/dev/null | sed 's/^use
 CONF_GROUP=$(grep -m1 '^group = ' "$DATA/etc/wired.conf" 2>/dev/null | sed 's/^group = //')
 [ -z "$CONF_USER"  ] && CONF_USER="wired"
 [ -z "$CONF_GROUP" ] && CONF_GROUP="wired"
+# Sanitize: allow only alphanumeric, underscore, hyphen.
+# Prevents XML plist injection and dscl/chown misuse if wired.conf is modified.
+CONF_USER=$(echo "$CONF_USER"   | tr -cd 'a-zA-Z0-9_-')
+CONF_GROUP=$(echo "$CONF_GROUP" | tr -cd 'a-zA-Z0-9_-')
+[ -z "$CONF_USER"  ] && CONF_USER="wired"
+[ -z "$CONF_GROUP" ] && CONF_GROUP="wired"
 
 # ── Ensure macOS group exists ─────────────────────────────────────────────────
 if ! dscl . -read "/Groups/${CONF_GROUP}" >/dev/null 2>&1; then
@@ -66,6 +72,29 @@ if [ -f "$DATA/etc/wired.conf" ]; then
     chmod -R 755 "$DATA" 2>/dev/null || true
     find "$DATA" -type f -exec chmod 644 {} \; 2>/dev/null || true
     chmod 755 "/Library/Wired/wired" "/Library/Wired/wiredctl" 2>/dev/null || true
+
+    # ── Fix ownership of the files directory ──────────────────────────────────
+    # "files =" can be a relative path (resolved from $DATA, the daemon's
+    # WorkingDirectory) or an absolute path chosen by the user.
+    CONF_FILES=$(grep -m1 '^files = ' "$DATA/etc/wired.conf" 2>/dev/null | sed 's/^files = //')
+    if [ -n "$CONF_FILES" ]; then
+        case "$CONF_FILES" in
+            /*) FILES_PATH="$CONF_FILES" ;;
+            *)  FILES_PATH="$DATA/$CONF_FILES" ;;
+        esac
+        # Guard: restrict chown -R to safe user-data directories.
+        # Prevents accidental ownership changes on system paths if
+        # files= is set to / or a sensitive location in wired.conf.
+        case "$FILES_PATH" in
+            /Users/*|/Volumes/*|/Library/Wired/*)
+                mkdir -p "$FILES_PATH" 2>/dev/null || true
+                chown -R "${CONF_USER}:${CONF_GROUP}" "$FILES_PATH" 2>/dev/null || true
+                ;;
+            *)
+                echo "WARNING: files path '$FILES_PATH' outside allowed dirs; skipping chown" >&2
+                ;;
+        esac
+    fi
     # Re-apply ACL so WiredServer.app (running as INSTALL_USER) can read data.
     chmod -R +a "user:$INSTALL_USER allow read,write,execute,delete,append,readattr,writeattr,readextattr,writeextattr,file_inherit,directory_inherit" "$DATA" 2>/dev/null || true
 
