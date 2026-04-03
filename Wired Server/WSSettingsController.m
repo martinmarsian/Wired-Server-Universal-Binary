@@ -240,8 +240,10 @@ NSString * const WPHelperBundleID = @"fr.read-write.Wired-Server-Helper";
     [_updater setAutomaticallyChecksForUpdates:[[WPSettings settings] boolForKey:@"SUEnableAutomaticChecks"]];
     [_updater setAutomaticallyDownloadsUpdates:[[WPSettings settings] boolForKey:@"SUAllowsAutomaticUpdates"]];
 	[_updater setSendsSystemProfile:YES];
+    // Always set the canonical feed URL from Info.plist to overwrite any stale URL cached in UserDefaults
+    [_updater setFeedURL:[NSURL URLWithString:[[NSBundle mainBundle] objectForInfoDictionaryKey:@"SUFeedURL"]]];
 
-    
+
 	_greenDropImage	= [[NSImage alloc] initWithContentsOfFile:[[self bundle] pathForResource:@"GreenDrop" ofType:@"tiff"]];
 	
     _redDropImage	= [[NSImage alloc] initWithContentsOfFile:[[self bundle] pathForResource:@"RedDrop" ofType:@"tiff"]];
