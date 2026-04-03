@@ -18,30 +18,12 @@
             → copy the printed Base64 string as sparkle:dsaSignature
          5. Get the file size in bytes:
               wc -c < WiredServer-X.Y.Z.dmg
-         6. Add a new
-
-
-    <item>
-      <title>Wired Server 2.5.4</title>
-      <pubDate>Fr., 03 Apr. 2026 14:49:52 +0000</pubDate>
-      <sparkle:releaseNotesLink>
-        https://github.com/martinmarsian/Wired-Server-2.5.3-Universal-Binary/releases/tag/v2.5.4
-      </sparkle:releaseNotesLink>
-      <sparkle:minimumSystemVersion>10.13</sparkle:minimumSystemVersion>
-      <enclosure
-        url="https://github.com/martinmarsian/Wired-Server-2.5.3-Universal-Binary/releases/download/v2.5.4/WiredServer-2.5.4.dmg"
-        sparkle:version="21"
-        sparkle:shortVersionString="2.5.4"
-        type="application/octet-stream"
-        length="9266167"
-        sparkle:dsaSignature="MEQCIGM3vmVr5z3gBolo5sO+yb7lVdsAAKikrHVUDPyqnFi8AiANx1yuNnyuwTkp
-7mORKlzV+7SFGRF/LKbYQUXOJKgkPw=="/>
-    </item>
-
+         6. Add a new <item> below (copy the existing one and update all fields)
+         ════════════════════════════════════════════════════════════════════ -->
 
     <item>
       <title>Wired Server 2.5.4</title>
-      <pubDate>Fr., 03 Apr. 2026 15:03:58 +0000</pubDate>
+      <pubDate>Fr., 03 Apr. 2026 16:33:29 +0000</pubDate>
       <sparkle:releaseNotesLink>
         https://github.com/martinmarsian/Wired-Server-2.5.3-Universal-Binary/releases/tag/v2.5.4
       </sparkle:releaseNotesLink>
@@ -51,9 +33,9 @@
         sparkle:version="20"
         sparkle:shortVersionString="2.5.4"
         type="application/octet-stream"
-        length="9266095"
-        sparkle:dsaSignature="MEUCIHw+UmF9uAO0/9fWNIPPtn9PC3ZDDWC6rYPrjPbhQ/INAiEA4rYiLUm4/f5P
-bPyuSHDIwYGs4/Rvv+qO3wGxx8KNVdA="/>
+        length="9266013"
+        sparkle:dsaSignature="MEUCIQDcgsXOSSlsl7I4x0SEarw0SLtwFMVFvPtXYGC2oaLRBQIgB3dhEdzHpGIB
+yJAbaSrB/4lZGOfqOpa39z7v2I4Gex0="/>
     </item>
 
   </channel>
