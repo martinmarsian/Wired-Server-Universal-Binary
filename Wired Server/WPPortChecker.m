@@ -26,117 +26,106 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#import "WSSettingsController.h"
 #import "WPPortChecker.h"
+#include <sys/socket.h>
+#include <netinet/in.h>
 #include <arpa/inet.h>
-#include <netdb.h>
+#include <fcntl.h>
+#include <unistd.h>
+#include <errno.h>
 
 @implementation WPPortChecker
-
-- (id)init {
-	self = [super init];
-	
-	_data = [[NSMutableData alloc] init];
-	
-	return self;
-}
-
-
-
-- (void)dealloc {
-	[_data release];
-	
-	[super dealloc];
-}
-
-
 
 #pragma mark -
 
 - (void)setDelegate:(id)newDelegate {
-	delegate = newDelegate;
+    delegate = newDelegate;
 }
-
-
 
 - (id)delegate {
-	return delegate;
+    return delegate;
 }
 
-
-
 #pragma mark -
+
+// Performs a non-blocking TCP connect to 127.0.0.1:port with a 5-second
+// timeout. Returns Open if wired is listening, Closed if the port is not
+// in use, Filtered on timeout, or Failed on any socket error.
+- (WPPortCheckerStatus)_checkPort:(NSUInteger)port {
+    int sockfd = socket(AF_INET, SOCK_STREAM, 0);
+    if (sockfd < 0)
+        return WPPortCheckerFailed;
+
+    // Switch to non-blocking so connect() returns immediately
+    int flags = fcntl(sockfd, F_GETFL, 0);
+    if (flags < 0 || fcntl(sockfd, F_SETFL, flags | O_NONBLOCK) < 0) {
+        close(sockfd);
+        return WPPortCheckerFailed;
+    }
+
+    struct sockaddr_in addr;
+    memset(&addr, 0, sizeof(addr));
+    addr.sin_family      = AF_INET;
+    addr.sin_port        = htons((uint16_t)port);
+    addr.sin_addr.s_addr = htonl(INADDR_LOOPBACK);   // 127.0.0.1
+
+    int result = connect(sockfd, (struct sockaddr *)&addr, sizeof(addr));
+
+    if (result == 0) {
+        // Immediate success (possible on loopback)
+        close(sockfd);
+        return WPPortCheckerOpen;
+    }
+    if (errno == ECONNREFUSED) {
+        close(sockfd);
+        return WPPortCheckerClosed;
+    }
+    if (errno != EINPROGRESS) {
+        close(sockfd);
+        return WPPortCheckerFailed;
+    }
+
+    // Wait up to 5 seconds for the connection to complete
+    fd_set writeSet;
+    FD_ZERO(&writeSet);
+    FD_SET(sockfd, &writeSet);
+    struct timeval tv = { .tv_sec = 5, .tv_usec = 0 };
+
+    result = select(sockfd + 1, NULL, &writeSet, NULL, &tv);
+
+    if (result == 0) {          // Timeout
+        close(sockfd);
+        return WPPortCheckerFiltered;
+    }
+    if (result < 0) {
+        close(sockfd);
+        return WPPortCheckerFailed;
+    }
+
+    // select() returned ready — check whether connect() succeeded
+    int soError = 0;
+    socklen_t soErrorLen = sizeof(soError);
+    getsockopt(sockfd, SOL_SOCKET, SO_ERROR, &soError, &soErrorLen);
+    close(sockfd);
+
+    if (soError == 0)             return WPPortCheckerOpen;
+    if (soError == ECONNREFUSED)  return WPPortCheckerClosed;
+    return WPPortCheckerFiltered;
+}
 
 - (void)checkStatusForPort:(NSUInteger)port {
-    NSURLRequest        *request;
-    NSURLConnection        *connection;
-    
-    _HTTPStatusCode        = 0;
-    _port                = port;
-    
-    [_data setLength:0];
-    
-    NSURL *url = [NSURL URLWithString:[NSSWF:@"https://wired.read-write.fr/port_check.php?port=%lu", (unsigned long)port]];
-    
-    request         = [NSURLRequest requestWithURL:url];
-    connection      = [NSURLConnection connectionWithRequest:request delegate:self];
-}
+    _port = port;
 
+    // Run the blocking socket check on a background queue and
+    // deliver the result on the main queue
+    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+        WPPortCheckerStatus status = [self _checkPort:port];
 
-
-#pragma mark -
-
-- (void)connection:(NSURLConnection *)connection didReceiveResponse:(NSURLResponse *)response {
-    if([response isKindOfClass:[NSHTTPURLResponse class]])
-        _HTTPStatusCode = [(NSHTTPURLResponse *) response statusCode];
-    else
-        _HTTPStatusCode = 200;
-}
-
-
-
-- (void)connection:(NSURLConnection *)connection didReceiveData:(NSData *)data {
-    [_data appendData:data];
-}
-
-
-
-- (void)connectionDidFinishLoading:(NSURLConnection *)connection {
-    NSString                *string;
-    NSUInteger                index;
-    WPPortCheckerStatus        status = WPPortCheckerFailed;
-        
-    if([[self delegate] respondsToSelector:@selector(portChecker:didReceiveStatus:forPort:)]) {
-        
-        if(_HTTPStatusCode >= 400) {
-            NSLog(@"*** [%@ %@]: HTTP status code %lu", [self class], NSStringFromSelector(_cmd), _HTTPStatusCode);
-        
-        } else {
-            
-            string = [[NSString stringWithData:_data encoding:NSUTF8StringEncoding]
-                stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
-                        
-            if([string length] > 0) {
-                if([string isEqualToString:@"open"])
-                    status = WPPortCheckerOpen;
-                else if([string isEqualToString:@"closed"])
-                    status = WPPortCheckerClosed;
-                else if([string isEqualToString:@"filtered"])
-                    status = WPPortCheckerFiltered;
-            }
-        }
-        
-        [[self delegate] portChecker:self didReceiveStatus:status forPort:_port];
-    }
-}
-
-
-
-- (void)connection:(NSURLConnection *)connection didFailWithError:(NSError *)error {
-    NSLog(@"*** [%@ %@]: %@", [self class], NSStringFromSelector(_cmd), [error localizedFailureReason]);
-        
-    if([[self delegate] respondsToSelector:@selector(portChecker:didReceiveStatus:forPort:)])
-        [[self delegate] portChecker:self didReceiveStatus:WPPortCheckerFailed forPort:_port];
+        dispatch_async(dispatch_get_main_queue(), ^{
+            if ([delegate respondsToSelector:@selector(portChecker:didReceiveStatus:forPort:)])
+                [delegate portChecker:self didReceiveStatus:status forPort:port];
+        });
+    });
 }
 
 @end

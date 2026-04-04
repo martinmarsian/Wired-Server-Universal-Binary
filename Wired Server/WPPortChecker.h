@@ -38,10 +38,7 @@ typedef enum _WPPortCheckerStatus		WPPortCheckerStatus;
 
 @interface WPPortChecker : WIObject {
 	id									delegate;
-	
-	NSMutableData						*_data;
 	NSUInteger							_port;
-	NSUInteger							_HTTPStatusCode;
 }
 
 - (void)setDelegate:(id)delegate;
