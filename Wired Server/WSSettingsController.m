@@ -220,23 +220,40 @@ NSString * const WPHelperBundleID = @"fr.read-write.Wired-Server-Helper";
 	[_logManager startReadingFromLog];
 }
 
+- (void)_saveWindowFrame {
+    [[NSUserDefaults standardUserDefaults] setObject:NSStringFromRect(self.window.frame)
+                                             forKey:@"WSWindowFrame"];
+}
+
 - (void)windowDidMove:(NSNotification *)notification {
-    // Save the top-left corner so awakeFromNib can restore it after setContentSize:
-    NSPoint topLeft = NSMakePoint(NSMinX(self.window.frame), NSMaxY(self.window.frame));
-    [[NSUserDefaults standardUserDefaults] setObject:NSStringFromPoint(topLeft)
-                                             forKey:@"WSWindowTopLeft"];
+    [self _saveWindowFrame];
+}
+
+- (void)windowDidResize:(NSNotification *)notification {
+    [self _saveWindowFrame];
 }
 
 - (void)awakeFromNib {
+    // Set the minimum content size (General view) so controls are never clipped
 	[self.window setContentSize:[self.generalPreferenceView frame].size];
 	[[self.window contentView] addSubview:self.generalPreferenceView];
 	[self.toolbar setSelectedItemIdentifier:@"General"];
 
-    // Restore the saved top-left corner (setContentSize: may shift origin.y,
-    // so we re-apply the position the user last chose)
-    NSString *savedTopLeft = [[NSUserDefaults standardUserDefaults] stringForKey:@"WSWindowTopLeft"];
-    if (savedTopLeft.length > 0) {
-        [self.window setFrameTopLeftPoint:NSPointFromString(savedTopLeft)];
+    // Restore the saved frame (position + size).
+    // setContentSize: above gives us the minimum acceptable frame; accept the
+    // saved frame only if it is at least that large, then keep the top-left
+    // corner the user chose.
+    NSString *savedFrameStr = [[NSUserDefaults standardUserDefaults] stringForKey:@"WSWindowFrame"];
+    if (savedFrameStr.length > 0) {
+        NSRect saved   = NSRectFromString(savedFrameStr);
+        NSRect minimum = self.window.frame;
+        NSRect restored;
+        restored.size.width  = MAX(saved.size.width,  minimum.size.width);
+        restored.size.height = MAX(saved.size.height, minimum.size.height);
+        // Keep the top-left corner from the saved position
+        restored.origin.x = saved.origin.x;
+        restored.origin.y = NSMaxY(saved) - restored.size.height;
+        [self.window setFrame:restored display:NO];
     }
 
     _wiredManager	= [[WPWiredManager alloc] init];
