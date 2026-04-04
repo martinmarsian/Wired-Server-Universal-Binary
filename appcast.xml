@@ -257,24 +257,6 @@ ZcI5+/6nZ0gbhcIPOmEFlmTzxoEjqqY="/>
 
     <item>
       <title>Wired Server 2.5.5</title>
-      <pubDate>Sa., 04 Apr. 2026 19:50:09 +0000</pubDate>
-      <sparkle:releaseNotesLink>
-        https://github.com/martinmarsian/Wired-Server-Universal-Binary/releases/tag/v.2.5.5
-      </sparkle:releaseNotesLink>
-      <sparkle:minimumSystemVersion>10.13</sparkle:minimumSystemVersion>
-      <enclosure
-        url="https://github.com/martinmarsian/Wired-Server-Universal-Binary/releases/download/v.2.5.5/WiredServer-2.5.5.dmg"
-        sparkle:version="26"
-        sparkle:shortVersionString="2.5.5"
-        type="application/octet-stream"
-        length="9238687"
-        sparkle:dsaSignature="MEUCIQCdYar0JiDuTxCu6aQBzQVHZ1vWJ/t8yRmCjG7EHOog8AIgMhDXK6yNlj66
-WbzEkRnGzxO3lPap2tcV5upIDDRyqc0="/>
-    </item>
-
-
-    <item>
-      <title>Wired Server 2.5.5</title>
       <pubDate>Sa., 04 Apr. 2026 20:31:47 +0000</pubDate>
       <sparkle:releaseNotesLink>
         https://github.com/martinmarsian/Wired-Server-Universal-Binary/releases/tag/v.2.5.5
