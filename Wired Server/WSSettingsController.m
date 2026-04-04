@@ -235,31 +235,15 @@ NSString * const WPHelperBundleID = @"fr.read-write.Wired-Server-Helper";
 
 - (void)awakeFromNib {
     // Set the minimum content size (General view) so controls are never clipped
-    // The Logs tab is the largest content view (681×313).
-    // Use it as the minimum window size so all tabs always have enough room.
-    NSSize minContent = NSMakeSize(681.0, 313.0);
-    NSSize minFrame   = [self.window frameRectForContentRect:
-                            NSMakeRect(0, 0, minContent.width, minContent.height)].size;
-    [self.window setMinSize:minFrame];
-
 	[[self.window contentView] addSubview:self.generalPreferenceView];
 	[self.toolbar setSelectedItemIdentifier:@"General"];
 
-    // Restore the saved frame (position + size); clamp to the minimum so no
-    // controls are ever clipped.
+    // Restore the saved frame (position + size) exactly as the user left it.
     NSString *savedFrameStr = [[NSUserDefaults standardUserDefaults] stringForKey:@"WSWindowFrame"];
     if (savedFrameStr.length > 0) {
-        NSRect saved = NSRectFromString(savedFrameStr);
-        NSRect restored;
-        restored.size.width  = MAX(saved.size.width,  minFrame.width);
-        restored.size.height = MAX(saved.size.height, minFrame.height);
-        restored.origin.x    = saved.origin.x;
-        restored.origin.y    = NSMaxY(saved) - restored.size.height;
-        [self.window setFrame:restored display:NO];
-    } else {
-        // First launch: open at the minimum (Logs) size
-        [self.window setContentSize:minContent];
+        [self.window setFrame:NSRectFromString(savedFrameStr) display:NO];
     }
+    // No saved frame → keep the XIB default size (first launch)
 
     _wiredManager	= [[WPWiredManager alloc] init];
 	_accountManager	= [[WPAccountManager alloc] initWithDatabasePath:[_wiredManager pathForFile:@"database.sqlite3"]];
