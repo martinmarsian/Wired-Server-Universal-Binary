@@ -6,16 +6,23 @@
 
 ---
 
-### LaunchAgent Mode (User Session)
+### Launch Mode Selection (System Daemon or User Agent)
 
-A new **Launch mode** toggle in the Settings → General tab lets you choose how the Wired server runs:
+A new **Launch mode** dropdown in the Settings → General tab lets you choose how the Wired server runs. The chosen mode is saved as `launchmode = daemon|agent` in `wired.conf` and persists across launches.
 
-- **System Daemon** (default) — runs as a macOS LaunchDaemon in the system domain under a dedicated service account (`wired`). Starts automatically at boot, even before any user logs in.
-- **User Agent** — runs as a LaunchAgent in your user session. No dedicated service account is required, and the server inherits your full TCC (privacy) permissions — including access to external drives — without any additional configuration.
+| | System Daemon | User Agent |
+|---|---|---|
+| **How it runs** | macOS LaunchDaemon, system domain | macOS LaunchAgent, user session |
+| **Service account** | Dedicated hidden account (`wired`) — isolated from all user sessions | No dedicated account — runs as the logged-in user |
+| **Starts at boot** | Yes, before any user logs in | Only when the installing user is logged in |
+| **Security** | Strong isolation — server process cannot access user data | Runs with full user privileges |
+| **External drives** | Blocked by macOS TCC on macOS 15+ (system context has no user TCC grants) | Allowed — inherits the logged-in user's TCC permissions, including removable volumes |
 
-The toggle is disabled while the server is running. To switch modes: **Stop → select mode → Start**.
+**System Daemon** is the default and recommended mode for servers that need to run continuously at boot or serve multiple users. **User Agent** is the better choice if you need to serve files from an external drive without additional TCC configuration.
 
-The chosen mode is saved as `launchmode = daemon|agent` in `wired.conf` and persists across launches.
+The dropdown is disabled while the server is running. To switch modes: **Stop → select the desired mode → Start**.
+
+> **Note on mode switching**: After switching modes, the first Start attempt may briefly show a failure state before the server comes up. This is a known timing issue on macOS 26 (see below). Clicking Start a second time always succeeds.
 
 ---
 
@@ -29,13 +36,19 @@ Several reliability fixes for macOS 26 (Darwin 25), where launchd's FSEvents han
 
 ---
 
-### Known Limitation — Second Start Required After Stop with Active Clients
+### Known Limitation — Second Start Click Required in Two Scenarios
 
-On macOS 26 (Tahoe), if the server is stopped while clients are actively connected, **clicking Start once may show a brief failure state**. Clicking Start a second time starts the server reliably.
+On macOS 26 (Tahoe), clicking Start may briefly show a failure state in two situations. **Clicking Start a second time always succeeds.**
 
-**Root cause**: When active SSL connections are present at stop time, the server performs a graceful `SSL_shutdown` on each connection before exiting. This can take up to ~65 seconds. During that time the TCP port remains bound by the process, even after a forced kill. macOS 26's kernel holds the socket state for a variable period after process exit that is not visible to standard tools. The adaptive probe mitigates this but cannot guarantee the port is free within the poll window in all cases.
+**1. Stop with active connected clients**
 
-**Workaround**: Wait a few seconds after Stop, then click Start again. In normal daily operation — where the mode is set once and left unchanged — this situation only arises after an explicit Stop with active connected clients.
+When the server is stopped while clients are actively connected, it performs a graceful `SSL_shutdown` on each open connection before exiting. This can take up to ~65 seconds. During that time the TCP port remains bound, even after a forced kill. macOS 26's kernel holds the socket state for a variable period that is not visible to standard tools. The adaptive port probe mitigates this but cannot guarantee the port is free within the poll window in all cases.
+
+**2. Switching between System Daemon and User Agent**
+
+After switching modes (Stop → change dropdown → Start), the first Start attempt may also briefly fail. The root cause is the same kernel socket-state hold combined with the launchd domain transition (system ↔ user). The second Start attempt succeeds reliably.
+
+**Workaround for both cases**: Wait a few seconds after the first Start attempt, then click Start again. In normal daily operation — where the launch mode is set once and left unchanged and no clients are connected at stop time — neither situation arises.
 
 ---
 
