@@ -69,6 +69,7 @@ void wd_settings_initialize(void) {
 		WI_INT32(WI_CONFIG_INTEGER),			WI_STR("total uploads"),
 		WI_INT32(WI_CONFIG_STRINGLIST),			WI_STR("tracker"),
 		WI_INT32(WI_CONFIG_USER),				WI_STR("user"),
+		WI_INT32(WI_CONFIG_STRING),				WI_STR("launchmode"),
 		NULL);
 	
 	defaults = wi_dictionary_with_data_and_keys(
