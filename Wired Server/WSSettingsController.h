@@ -7,7 +7,7 @@
 //
 
 #import <Foundation/Foundation.h>
-#import <Sparkle/SUUpdater.h>
+#import <Sparkle/Sparkle.h>
 #import "WPPortChecker.h"
 
 
@@ -75,7 +75,7 @@ enum WPPruneEventsType {
     IBOutlet NSProgressIndicator			*_activityProgressIndicator;
     IBOutlet NSTextField					*_activityTextField;
 
-	SUUpdater					*_updater;
+	SPUStandardUpdaterController *_updaterController;
 	
 	WPAccountManager			*_accountManager;
 	WPConfigManager				*_configManager;
@@ -162,7 +162,7 @@ enum WPPruneEventsType {
 @property (assign) IBOutlet NSTextField                 *passwordMismatchTextField;
 
 /** Attributes */
-@property (readwrite, retain) SUUpdater					*updater;
+@property (readwrite, retain) SPUStandardUpdaterController *updaterController;
 
 @property (readwrite, retain) WPAccountManager			*accountManager;
 @property (readwrite, retain) WPConfigManager			*configManager;

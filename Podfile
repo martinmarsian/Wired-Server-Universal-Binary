@@ -1,9 +1,9 @@
 source 'https://github.com/CocoaPods/Specs.git'
 use_frameworks!
-platform :osx, '10.10'
+platform :osx, '10.13'
 
 target 'Wired Server' do
-    pod 'Sparkle'
+    pod 'Sparkle', '~> 2.0'
 end
 
 target 'WiredNetworking' do

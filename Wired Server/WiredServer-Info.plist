@@ -34,7 +34,7 @@
 	<string>NSApplication</string>
 	<key>SUFeedURL</key>
 	<string>https://raw.githubusercontent.com/martinmarsian/wired-server-universal-binary/master/appcast.xml</string>
-	<key>SUPublicDSAKeyFile</key>
-	<string>dsa_pub.pem</string>
+	<key>SUPublicEDKey</key>
+	<string>bFdWJy+UjxoodjtTUdX4bPiwAWd3dbsSfNiQd9NkPT8=</string>
 </dict>
 </plist>

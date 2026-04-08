@@ -116,7 +116,7 @@ NSString * const WPHelperBundleID = @"fr.read-write.Wired-Server-Helper";
 @synthesize launchModePopUpButton        = _launchModePopUpButton;
 
 @synthesize revealButton                = _revealButton;
-@synthesize updater                     = _updater;
+@synthesize updaterController           = _updaterController;
 
 @synthesize accountManager              = _accountManager;
 @synthesize configManager               = _configManager;
@@ -161,7 +161,7 @@ NSString * const WPHelperBundleID = @"fr.read-write.Wired-Server-Helper";
     [_wiredManager release];
     [_portChecker release];
     
-    [_updater release];
+    [_updaterController release];
     
     [_greenDropImage release];
     [_redDropImage release];
@@ -255,13 +255,14 @@ NSString * const WPHelperBundleID = @"fr.read-write.Wired-Server-Helper";
 
 	_portChecker	= [[WPPortChecker alloc] init];
 	[_portChecker setDelegate:self];
-	_updater = [[SUUpdater updaterForBundle:[self bundle]] retain];
-	[_updater setDelegate:(id)self];
-    [_updater setAutomaticallyChecksForUpdates:[[WPSettings settings] boolForKey:@"SUEnableAutomaticChecks"]];
-    [_updater setAutomaticallyDownloadsUpdates:[[WPSettings settings] boolForKey:@"SUAllowsAutomaticUpdates"]];
-	[_updater setSendsSystemProfile:YES];
-    // Always set the canonical feed URL from Info.plist to overwrite any stale URL cached in UserDefaults
-    [_updater setFeedURL:[NSURL URLWithString:[[NSBundle mainBundle] objectForInfoDictionaryKey:@"SUFeedURL"]]];
+    _updaterController = [[SPUStandardUpdaterController alloc]
+        initWithUpdaterDelegate:(id<SPUUpdaterDelegate>)self
+             userDriverDelegate:nil];
+    _updaterController.updater.automaticallyChecksForUpdates =
+        [[WPSettings settings] boolForKey:@"SUEnableAutomaticChecks"];
+    _updaterController.updater.automaticallyDownloadsUpdates =
+        [[WPSettings settings] boolForKey:@"SUAllowsAutomaticUpdates"];
+    // Feed URL is read directly from SUFeedURL in Info.plist by Sparkle 2.x — no setFeedURL: needed
 
     // Sparkle's scheduled interval (default 24h) suppresses the auto-check if a manual
     // check was done recently. Trigger an explicit background check on every launch so the
@@ -269,7 +270,7 @@ NSString * const WPHelperBundleID = @"fr.read-write.Wired-Server-Helper";
     if ([[WPSettings settings] boolForKey:@"SUEnableAutomaticChecks"]) {
         dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(3 * NSEC_PER_SEC)),
                        dispatch_get_main_queue(), ^{
-            [_updater checkForUpdatesInBackground];
+            [_updaterController.updater checkForUpdatesInBackground];
         });
     }
 
@@ -478,13 +479,13 @@ NSString * const WPHelperBundleID = @"fr.read-write.Wired-Server-Helper";
 #pragma mark -
 
 - (IBAction)checkForUpdate:(id)sender {
-	[_updater checkForUpdates:sender];
+	[_updaterController checkForUpdates:sender];
 }
 
 - (IBAction)automaticallyCheckForUpdate:(id)sender {
     BOOL enabled = ([sender state] == NSControlStateValueOn);
     [[WPSettings settings] setBool:enabled forKey:@"SUEnableAutomaticChecks"];
-    [_updater setAutomaticallyChecksForUpdates:enabled];
+    _updaterController.updater.automaticallyChecksForUpdates = enabled;
 }
 
 
@@ -943,7 +944,7 @@ NSString * const WPHelperBundleID = @"fr.read-write.Wired-Server-Helper";
 
 #pragma mark -
 
-- (void)updaterWillRelaunchApplication:(SUUpdater *)updater {
+- (void)updaterWillRelaunchApplication:(SPUUpdater *)updater {
     NSURL *url = [[NSBundle mainBundle] URLForResource:@"Wired Server Helper" withExtension:@"app"];
     
     if([[WISettings settings] boolForKey:WPEnableMenuItem]) {
