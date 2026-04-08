@@ -322,5 +322,22 @@ ZcI5+/6nZ0gbhcIPOmEFlmTzxoEjqqY="/>
         sparkle:dsaSignature="MEUCIQCXl/iFFa5+xrVWpUR6mt3oaM54n+07o3IVC0FdA1SyAQIgA0mKPwClc+BMCBHOZgEsrfW8LG3aYsQyYjNkESA6jtg="/>
     </item>
 
+
+    <item>
+      <title>Wired Server 2.5.7</title>
+      <pubDate>Mi., 08 Apr. 2026 13:03:11 +0000</pubDate>
+      <sparkle:releaseNotesLink>
+        https://github.com/martinmarsian/Wired-Server-Universal-Binary/releases/tag/v2.5.7
+      </sparkle:releaseNotesLink>
+      <sparkle:minimumSystemVersion>10.13</sparkle:minimumSystemVersion>
+      <enclosure
+        url="https://github.com/martinmarsian/Wired-Server-Universal-Binary/releases/download/v2.5.7/WiredServer-2.5.7.zip"
+        sparkle:version="34"
+        sparkle:shortVersionString="2.5.7"
+        type="application/zip"
+        length="7250606"
+        sparkle:edSignature="vf9qo5SaSCVnnbhVT2MTE1MSHI8836CQGoMC4u0hqioN8u6bwsqD/6VpVdXRuB9TMBdV2ETZUDBSnve3IcG9Cg==" sparkle:dsaSignature="MEQCIASYsHWGqs46WPLTyRdIPzyiOAjV/Z7PJkqwtNLBVXmIAiBESlnwTvs7fH0UckMoAaVlbIBvhOgzs9BH3EWBLBwCrw=="/>
+    </item>
+
   </channel>
 </rss>
