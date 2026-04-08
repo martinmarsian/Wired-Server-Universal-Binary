@@ -110,15 +110,15 @@
     WPDatabaseManager *dbManager;
     NSString *query;
     
-    query = [NSString stringWithFormat:@"UPDATE users SET password='%@' WHERE name = '%@'", [password SHA1], name];
+    query = @"UPDATE users SET password=? WHERE name=?";
     dbManager = [WPDatabaseManager databaseManagerWithPath:_dbPath];
-    
+
     if(![dbManager open]) {
 		*error = [WPError errorWithDomain:WPPreferencePaneErrorDomain code:WPPreferencePaneUsersReadFailed];
 		return NO;
 	}
-    
-    if(![dbManager executeQuery:query withBlock:^(NSDictionary *results) {
+
+    if(![dbManager executeQuery:query withParameters:[NSArray arrayWithObjects:[password SHA1], name, nil] block:^(NSDictionary *results) {
         if(!results) {
             *error = [WPError errorWithDomain:WPPreferencePaneErrorDomain code:WPPreferencePaneUsersWriteFailed];
             succes = NO;
@@ -147,9 +147,7 @@
         [self _deleteUserAccountWithName:name error:error];
     }
     
-    NSLog(@"createNewAdminUserAccountWithName: %@", password);
-    
-    query = [NSString stringWithFormat:@"INSERT INTO users ("
+    query = @"INSERT INTO users ("
     "name, "
     "full_name, "
     "creation_time, "
@@ -220,25 +218,25 @@
     "tracker_list_servers, "
     "tracker_register_servers) "
     "VALUES ( "
-    "'%@', "
+    "?, "
     "'Administrator', "
     "DATETIME(), "
     "0, 0, 0, 0, "
-    "'%@', "
+    "?, "
     "'wired.account.color.red', "
     "1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, "
     "1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, "
     "1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, "
-    "1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1)", name, [password SHA1]];
-    
+    "1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1)";
+
     dbManager = [WPDatabaseManager databaseManagerWithPath:_dbPath];
-    
+
     if(![dbManager open]) {
 		*error = [WPError errorWithDomain:WPPreferencePaneErrorDomain code:WPPreferencePaneUsersReadFailed];
 		return NO;
 	}
-    
-    if(![dbManager executeQuery:query withBlock:^(NSDictionary *results) {
+
+    if(![dbManager executeQuery:query withParameters:[NSArray arrayWithObjects:name, [password SHA1], nil] block:^(NSDictionary *results) {
         if(!results) {
             *error = [WPError errorWithDomain:WPPreferencePaneErrorDomain code:WPPreferencePaneUsersWriteFailed];
             succes = NO;
@@ -261,15 +259,15 @@
     WPDatabaseManager *dbManager;
     NSString *query;
     
-    query = [NSString stringWithFormat:@"DELETE FROM users WHERE name = '%@'", name];
+    query = @"DELETE FROM users WHERE name=?";
     dbManager = [WPDatabaseManager databaseManagerWithPath:_dbPath];
-    
+
     if(![dbManager open]) {
 		*error = [WPError errorWithDomain:WPPreferencePaneErrorDomain code:WPPreferencePaneUsersReadFailed];
 		return NO;
 	}
-    
-    if(![dbManager executeQuery:query withBlock:^(NSDictionary *results) {
+
+    if(![dbManager executeQuery:query withParameters:[NSArray arrayWithObjects:name, nil] block:^(NSDictionary *results) {
         if(!results) {
             *error = [WPError errorWithDomain:WPPreferencePaneErrorDomain code:WPPreferencePaneUsersWriteFailed];
             succes = NO;

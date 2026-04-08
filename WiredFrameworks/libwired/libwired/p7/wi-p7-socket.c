@@ -60,6 +60,7 @@ int wi_p7_socket_dummy = 0;
 #define _WI_P7_SOCKET_XML_MAGIC                                0x3C3F786D
 #define _WI_P7_SOCKET_LENGTH_SIZE                            4
 #define _WI_P7_SOCKET_MAX_BINARY_SIZE                        (10 * 1024 * 1024)
+#define _WI_P7_SOCKET_MAX_DECOMPRESSED_SIZE                  (64 * 1024 * 1024)  /* decompression bomb limit */
 
 #define _WI_P7_COMPRESSION_DEFLATE                            0
 
@@ -1600,26 +1601,38 @@ static wi_integer_t _wi_p7_socket_deflate(wi_p7_socket_t *p7_socket, const void 
 
 
 static wi_integer_t _wi_p7_socket_inflate(wi_p7_socket_t *p7_socket, const void *in_buffer, uint32_t in_size) {
-	wi_uinteger_t	multiple, bytes;
+	wi_uinteger_t	multiple, bytes, proposed;
 	int				err, enderr;
-	
+
+	if(in_size == 0)
+		return 0;
+
 	for(multiple = 2; multiple < 16; multiple++) {
-		p7_socket->compression_buffer_length = in_size * (1 << multiple);
+		proposed = in_size * (1 << multiple);
+
+		if(proposed > _WI_P7_SOCKET_MAX_DECOMPRESSED_SIZE) {
+			wi_error_set_libwired_error_with_format(WI_ERROR_P7_HANDSHAKEFAILED,
+				WI_STR("Decompressed size exceeds limit of %u bytes"),
+				_WI_P7_SOCKET_MAX_DECOMPRESSED_SIZE);
+			return -1;
+		}
+
+		p7_socket->compression_buffer_length = proposed;
 
 		if(!p7_socket->compression_buffer)
 			p7_socket->compression_buffer = wi_malloc(p7_socket->compression_buffer_length);
 		else
 			p7_socket->compression_buffer = wi_realloc(p7_socket->compression_buffer, p7_socket->compression_buffer_length);
 
-		p7_socket->inflate_stream.next_in		= (unsigned char *) in_buffer;
-		p7_socket->inflate_stream.avail_in		= in_size;
-		p7_socket->inflate_stream.next_out		= (unsigned char *) p7_socket->compression_buffer;
-		p7_socket->inflate_stream.avail_out		= p7_socket->compression_buffer_length;
-		
+		p7_socket->inflate_stream.next_in	= (unsigned char *) in_buffer;
+		p7_socket->inflate_stream.avail_in	= in_size;
+		p7_socket->inflate_stream.next_out	= (unsigned char *) p7_socket->compression_buffer;
+		p7_socket->inflate_stream.avail_out	= p7_socket->compression_buffer_length;
+
 		err		= inflate(&p7_socket->inflate_stream, Z_FINISH);
 		bytes	= p7_socket->inflate_stream.total_out;
 		enderr	= inflateReset(&p7_socket->inflate_stream);
-		
+
 		if(err == Z_STREAM_END && enderr != Z_BUF_ERROR)
 			break;
 	}

@@ -23,6 +23,7 @@ typedef void (^WPDatabaseResultsBlock)(NSDictionary *results);
 - (void)close;
 
 - (BOOL)executeQuery:(NSString *)string withBlock:(WPDatabaseResultsBlock)block;
+- (BOOL)executeQuery:(NSString *)sql withParameters:(NSArray *)parameters block:(WPDatabaseResultsBlock)block;
 
 - (BOOL)isOpen;
 

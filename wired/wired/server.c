@@ -39,6 +39,7 @@
 #include <sys/types.h>
 #include <netinet/in.h>
 #include <stdarg.h>
+#include <stdatomic.h>
 #include <wired/wired.h>
 
 #include "accounts.h"
@@ -56,6 +57,9 @@
 #include "transfers.h"
 
 #define WD_SERVER_PING_INTERVAL		60.0
+#define WD_MAX_PENDING_CONNECTIONS  50
+
+static atomic_int _wd_pending_connections = ATOMIC_VAR_INIT(0);
 
 #ifdef HAVE_CORESERVICES_CORESERVICES_H
 static void							wd_server_cf_thread(wi_runtime_instance_t *);
@@ -644,8 +648,17 @@ static void wd_server_listen_thread(wi_runtime_instance_t *argument) {
 			continue;
 		}
 		
-		if(!wi_thread_create_thread(wd_server_accept_thread, socket))
+		if(atomic_load(&_wd_pending_connections) >= WD_MAX_PENDING_CONNECTIONS) {
+			wi_log_warn(WI_STR("Connection from %@ rejected: too many pending connections"), ip);
+			wi_release(socket);
+			continue;
+		}
+		atomic_fetch_add(&_wd_pending_connections, 1);
+
+		if(!wi_thread_create_thread(wd_server_accept_thread, socket)) {
+			atomic_fetch_sub(&_wd_pending_connections, 1);
 			wi_log_error(WI_STR("Could not create a client thread for %@: %m"), ip);
+		}
 	}
 	
 	wi_release(pool);
@@ -705,6 +718,7 @@ static void wd_server_accept_thread(wi_runtime_instance_t *argument) {
 	}
 
 end:
+	atomic_fetch_sub(&_wd_pending_connections, 1);
 	wi_release(pool);
 }
 

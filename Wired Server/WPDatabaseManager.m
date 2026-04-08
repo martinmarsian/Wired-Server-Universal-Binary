@@ -100,6 +100,37 @@ static int callback(void *NotUsed, int argc, char **argv, char **azColName){
     return YES;
 }
 
+- (BOOL)executeQuery:(NSString *)sql withParameters:(NSArray *)parameters block:(WPDatabaseResultsBlock)block {
+    sqlite3_stmt    *stmt = NULL;
+    int             rc;
+
+    if(sqlite3_prepare_v2(_db, [sql UTF8String], -1, &stmt, NULL) != SQLITE_OK) {
+        fprintf(stderr, "ERROR (SQL prepare): %s\n", sqlite3_errmsg(_db));
+        return NO;
+    }
+
+    for(NSUInteger i = 0; i < [parameters count]; i++) {
+        sqlite3_bind_text(stmt, (int)(i + 1),
+                          [[parameters objectAtIndex:i] UTF8String], -1, SQLITE_TRANSIENT);
+    }
+
+    while((rc = sqlite3_step(stmt)) == SQLITE_ROW) {
+        if(block) {
+            NSMutableDictionary *result = [NSMutableDictionary dictionary];
+            for(int col = 0; col < sqlite3_column_count(stmt); col++) {
+                const char *colName = sqlite3_column_name(stmt, col);
+                const unsigned char *colVal  = sqlite3_column_text(stmt, col);
+                [result setValue:(colVal ? [NSString stringWithUTF8String:(const char *)colVal] : @"NULL")
+                          forKey:[NSString stringWithUTF8String:colName]];
+            }
+            block(result);
+        }
+    }
+
+    sqlite3_finalize(stmt);
+    return (rc == SQLITE_DONE);
+}
+
 - (BOOL)isOpen {
     return _isOpen;
 }

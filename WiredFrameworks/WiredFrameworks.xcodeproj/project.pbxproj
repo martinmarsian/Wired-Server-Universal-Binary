@@ -375,6 +375,8 @@
 		4CFDCBC915694FC300DA17A6 /* WIChatHistoryBundle.h in Headers */ = {isa = PBXBuildFile; fileRef = 4CFDCBC715694FC300DA17A6 /* WIChatHistoryBundle.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		4CFDCBCA15694FC300DA17A6 /* WIChatHistoryBundle.m in Sources */ = {isa = PBXBuildFile; fileRef = 4CFDCBC815694FC300DA17A6 /* WIChatHistoryBundle.m */; };
 		4CFDCBDC1569537B00DA17A6 /* ChatHistory-default.WiredHistory in Resources */ = {isa = PBXBuildFile; fileRef = 4CFDCBD01569533C00DA17A6 /* ChatHistory-default.WiredHistory */; };
+		843836EFDD0A213613120626 /* Pods_libwired_osx.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7374EEA9EF2E5BC637DADD1B /* Pods_libwired_osx.framework */; };
+		9780B00D92AA71AC51A23AB3 /* Pods_WiredNetworking.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 6A0B8281379A5F988BA9C4BC /* Pods_WiredNetworking.framework */; };
 		B130E0862195D63700C4E225 /* libicucore.A.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = B12D6E1521930AE600307DFA /* libicucore.A.dylib */; };
 		B130E0892195D7F600C4E225 /* libz.1.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = B130E0882195D7F600C4E225 /* libz.1.dylib */; };
 		B130E08B2195D80600C4E225 /* libxml2.2.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = B130E08A2195D80600C4E225 /* libxml2.2.dylib */; };
@@ -468,7 +470,7 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
-		223A0EC83291DDBA0A9DDA56 /* Pods-WiredNetworking.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-WiredNetworking.release.xcconfig"; path = "Pods/Target Support Files/Pods-WiredNetworking/Pods-WiredNetworking.release.xcconfig"; sourceTree = "<group>"; };
+		223A0EC83291DDBA0A9DDA56 /* Pods-WiredNetworking.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-WiredNetworking.release.xcconfig"; path = "../Pods/Target Support Files/Pods-WiredNetworking/Pods-WiredNetworking.release.xcconfig"; sourceTree = "<group>"; };
 		4C04AAC0181EA9B800D00B75 /* WiredData-Prefix.pch */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "WiredData-Prefix.pch"; sourceTree = "<group>"; };
 		4C0F438116F1419F00735AC3 /* NSTreeController+WIAppKit.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSTreeController+WIAppKit.h"; sourceTree = "<group>"; };
 		4C0F438216F1419F00735AC3 /* NSTreeController+WIAppKit.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSTreeController+WIAppKit.m"; sourceTree = "<group>"; };
@@ -919,6 +921,8 @@
 		4CFDCBC715694FC300DA17A6 /* WIChatHistoryBundle.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WIChatHistoryBundle.h; sourceTree = "<group>"; };
 		4CFDCBC815694FC300DA17A6 /* WIChatHistoryBundle.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WIChatHistoryBundle.m; sourceTree = "<group>"; };
 		4CFDCBD01569533C00DA17A6 /* ChatHistory-default.WiredHistory */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "ChatHistory-default.WiredHistory"; sourceTree = BUILT_PRODUCTS_DIR; };
+		6A0B8281379A5F988BA9C4BC /* Pods_WiredNetworking.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_WiredNetworking.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		7374EEA9EF2E5BC637DADD1B /* Pods_libwired_osx.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_libwired_osx.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		B12D6E0F2193096600307DFA /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = Base; path = Base.lproj/CrashReports.xib; sourceTree = "<group>"; };
 		B12D6E102193096700307DFA /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = Base; path = Base.lproj/ReleaseNotes.xib; sourceTree = "<group>"; };
 		B12D6E112193096700307DFA /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = Base; path = Base.lproj/TreeDetail.xib; sourceTree = "<group>"; };
@@ -941,7 +945,7 @@
 		B1F944A02191B9C500641324 /* AppKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AppKit.framework; path = Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/System/Library/Frameworks/AppKit.framework; sourceTree = DEVELOPER_DIR; };
 		B1F944A42191B9F700641324 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
 		B1F944A52191B9F900641324 /* CoreData.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreData.framework; path = System/Library/Frameworks/CoreData.framework; sourceTree = SDKROOT; };
-		E2322DAB9472FEABB7963720 /* Pods-WiredNetworking.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-WiredNetworking.debug.xcconfig"; path = "Pods/Target Support Files/Pods-WiredNetworking/Pods-WiredNetworking.debug.xcconfig"; sourceTree = "<group>"; };
+		E2322DAB9472FEABB7963720 /* Pods-WiredNetworking.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-WiredNetworking.debug.xcconfig"; path = "../Pods/Target Support Files/Pods-WiredNetworking/Pods-WiredNetworking.debug.xcconfig"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -965,6 +969,7 @@
 				4CA9B2E01807228000FDDB3A /* wired.a in Frameworks */,
 				B130E08D2195D83400C4E225 /* libxml2.2.dylib in Frameworks */,
 				B130E08C2195D82C00C4E225 /* libz.1.dylib in Frameworks */,
+				9780B00D92AA71AC51A23AB3 /* Pods_WiredNetworking.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -991,6 +996,7 @@
 				B1F9448E2191B86900641324 /* Security.framework in Frameworks */,
 				B130E08B2195D80600C4E225 /* libxml2.2.dylib in Frameworks */,
 				B130E0892195D7F600C4E225 /* libz.1.dylib in Frameworks */,
+				843836EFDD0A213613120626 /* Pods_libwired_osx.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1677,6 +1683,8 @@
 				B1F9448D2191B86900641324 /* Security.framework */,
 				B1F9448A2191B77900641324 /* Carbon.framework */,
 				4CBDAD17147AF94F00D0C51A /* Other Frameworks */,
+				6A0B8281379A5F988BA9C4BC /* Pods_WiredNetworking.framework */,
+				7374EEA9EF2E5BC637DADD1B /* Pods_libwired_osx.framework */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -2536,7 +2544,7 @@
 					/usr/lib,
 					"$(PROJECT_DIR)",
 				);
-				MACOSX_DEPLOYMENT_TARGET = 10.10;
+				MACOSX_DEPLOYMENT_TARGET = 10.13;
 				OTHER_LDFLAGS = (
 					"-all_load",
 					"-ObjC",
@@ -2576,7 +2584,7 @@
 					/usr/lib,
 					"$(PROJECT_DIR)",
 				);
-				MACOSX_DEPLOYMENT_TARGET = 10.10;
+				MACOSX_DEPLOYMENT_TARGET = 10.13;
 				OTHER_LDFLAGS = (
 					"-all_load",
 					"-ObjC",
@@ -2615,7 +2623,7 @@
 					"$(inherited)",
 					"\"$(SRCROOT)/Pods/OpenSSL-Universal/lib-macos\"",
 				);
-				MACOSX_DEPLOYMENT_TARGET = 10.10;
+				MACOSX_DEPLOYMENT_TARGET = 10.13;
 				PRODUCT_BUNDLE_IDENTIFIER = "fr.read-write.${PRODUCT_NAME:rfc1034identifier}";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = macosx;
@@ -2651,7 +2659,7 @@
 					"$(inherited)",
 					"\"$(SRCROOT)/Pods/OpenSSL-Universal/lib-macos\"",
 				);
-				MACOSX_DEPLOYMENT_TARGET = 10.10;
+				MACOSX_DEPLOYMENT_TARGET = 10.13;
 				PRODUCT_BUNDLE_IDENTIFIER = "fr.read-write.${PRODUCT_NAME:rfc1034identifier}";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = macosx;
@@ -2685,7 +2693,7 @@
 					"$(inherited)",
 					"\"$(SRCROOT)/Pods/OpenSSL-Universal/lib-macos\"",
 				);
-				MACOSX_DEPLOYMENT_TARGET = 10.10;
+				MACOSX_DEPLOYMENT_TARGET = 10.13;
 				OTHER_LDFLAGS = (
 					"-all_load",
 					"-ObjC",
@@ -2724,7 +2732,7 @@
 					"$(inherited)",
 					"\"$(SRCROOT)/Pods/OpenSSL-Universal/lib-macos\"",
 				);
-				MACOSX_DEPLOYMENT_TARGET = 10.10;
+				MACOSX_DEPLOYMENT_TARGET = 10.13;
 				OTHER_LDFLAGS = (
 					"-all_load",
 					"-ObjC",
@@ -2781,7 +2789,7 @@
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
-				MACOSX_DEPLOYMENT_TARGET = 10.10;
+				MACOSX_DEPLOYMENT_TARGET = 10.13;
 				ONLY_ACTIVE_ARCH = YES;
 				SDKROOT = macosx;
 				STRIP_INSTALLED_PRODUCT = NO;
@@ -2825,7 +2833,7 @@
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
-				MACOSX_DEPLOYMENT_TARGET = 10.10;
+				MACOSX_DEPLOYMENT_TARGET = 10.13;
 				SDKROOT = macosx;
 				STRIP_INSTALLED_PRODUCT = NO;
 				VALIDATE_PRODUCT = YES;
@@ -2855,7 +2863,7 @@
 					"$(SDKROOT)/usr/lib/system",
 					"$(PROJECT_DIR)",
 				);
-				MACOSX_DEPLOYMENT_TARGET = 10.10;
+				MACOSX_DEPLOYMENT_TARGET = 10.13;
 				OTHER_LDFLAGS = (
 					"$(inherited)",
 					"-ObjC",
@@ -2896,7 +2904,7 @@
 					"$(SDKROOT)/usr/lib/system",
 					"$(PROJECT_DIR)",
 				);
-				MACOSX_DEPLOYMENT_TARGET = 10.10;
+				MACOSX_DEPLOYMENT_TARGET = 10.13;
 				OTHER_LDFLAGS = (
 					"$(inherited)",
 					"-ObjC",
@@ -2930,7 +2938,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES;
 				INFOPLIST_FILE = "ChatHistory-default/ChatHistory-default-Info.plist";
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Bundles";
-				MACOSX_DEPLOYMENT_TARGET = 10.10;
+				MACOSX_DEPLOYMENT_TARGET = 10.13;
 				ONLY_ACTIVE_ARCH = YES;
 				PRODUCT_BUNDLE_IDENTIFIER = "fr.read-write.${PRODUCT_NAME:rfc1034identifier}";
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -2957,7 +2965,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES;
 				INFOPLIST_FILE = "ChatHistory-default/ChatHistory-default-Info.plist";
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Bundles";
-				MACOSX_DEPLOYMENT_TARGET = 10.10;
+				MACOSX_DEPLOYMENT_TARGET = 10.13;
 				PRODUCT_BUNDLE_IDENTIFIER = "fr.read-write.${PRODUCT_NAME:rfc1034identifier}";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = macosx;

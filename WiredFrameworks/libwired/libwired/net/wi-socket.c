@@ -253,27 +253,29 @@ wi_socket_tls_t * wi_socket_tls_init_with_type(wi_socket_tls_t *tls, wi_socket_t
 	switch(type) {
 		default:
 		case WI_SOCKET_TLS_CLIENT:
-			method = (SSL_METHOD *)TLSv1_client_method();
+			method = (SSL_METHOD *)SSLv23_client_method();
 			break;
 
 		case WI_SOCKET_TLS_SERVER:
-			method = (SSL_METHOD *)TLSv1_server_method();
+			method = (SSL_METHOD *)SSLv23_server_method();
 			break;
 	}
-	
+
 	tls->ssl_ctx = SSL_CTX_new(method);
-	
+
 	if(!tls->ssl_ctx) {
 		wi_error_set_openssl_error();
-		
+
 		wi_release(NULL);
-		
+
 		return NULL;
 	}
-	
+
 	SSL_CTX_set_mode(tls->ssl_ctx, SSL_MODE_AUTO_RETRY);
 	SSL_CTX_set_quiet_shutdown(tls->ssl_ctx, 1);
-	
+	/* Require TLS 1.2 or higher; disable deprecated TLS 1.0 and 1.1 */
+	SSL_CTX_set_options(tls->ssl_ctx, SSL_OP_NO_TLSv1 | SSL_OP_NO_TLSv1_1);
+
 	return tls;
 }
 

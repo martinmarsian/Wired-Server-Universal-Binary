@@ -128,7 +128,7 @@
 	enumerator = [self objectEnumerator];
 
 	while((object = [enumerator nextObject]))
-		objc_msgSend(object, selector, object1, object2);
+		((void (*)(id, SEL, id, id))objc_msgSend)(object, selector, object1, object2);
 }
 
 
@@ -140,7 +140,7 @@
 	enumerator = [self objectEnumerator];
 
 	while((object = [enumerator nextObject]))
-		objc_msgSend(object, selector, value);
+		((void (*)(id, SEL, BOOL))objc_msgSend)(object, selector, value);
 }
 
 
@@ -269,7 +269,7 @@
 		method = [object methodForSelector:selector];
 
 		for(i = 0; i < count; i++) {
-			result = (NSComparisonResult) method(object, selector, [self objectAtIndex:i]);
+			result = ((NSComparisonResult (*)(id, SEL, id))method)(object, selector, [self objectAtIndex:i]);
 			
 			if(result < 0) {
 				[self insertObject:object atIndex:i];

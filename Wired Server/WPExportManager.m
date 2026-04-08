@@ -185,10 +185,38 @@
 			continue;
 		
 		zipfile = [NSFileManager temporaryPathWithPrefix:@"WiredSettings"];
-        		
+
 		if(![data writeToFile:zipfile options:0 error:error])
 			return NO;
-		
+
+		/* Validate ZIP contents before extraction — prevent path traversal (Zip Slip) */
+		NSTask *listTask = [[[NSTask alloc] init] autorelease];
+		NSPipe *listPipe = [NSPipe pipe];
+		[listTask setLaunchPath:@"/usr/bin/unzip"];
+		[listTask setArguments:[NSArray arrayWithObjects:@"-Z1", zipfile, NULL]];
+		[listTask setStandardOutput:listPipe];
+		[listTask launch];
+		[listTask waitUntilExit];
+
+		NSData *listData = [[listPipe fileHandleForReading] readDataToEndOfFile];
+		NSString *listing = [[[NSString alloc] initWithData:listData
+		                                           encoding:NSUTF8StringEncoding] autorelease];
+
+		for(NSString *entry in [listing componentsSeparatedByString:@"\n"]) {
+			NSString *trimmed = [entry stringByTrimmingCharactersInSet:
+			                     [NSCharacterSet whitespaceAndNewlineCharacterSet]];
+			if([trimmed length] == 0)
+				continue;
+			if([trimmed hasPrefix:@"/"] ||
+			   [trimmed rangeOfString:@"../"].location != NSNotFound ||
+			   [trimmed rangeOfString:@"/.."].location != NSNotFound) {
+				[[NSFileManager defaultManager] removeItemAtPath:zipfile error:nil];
+				*error = [WPError errorWithDomain:WPPreferencePaneErrorDomain
+				                            code:WPPreferencePaneImportFailed];
+				return NO;
+			}
+		}
+
 		task = [NSTask launchedTaskWithLaunchPath:@"/usr/bin/unzip"
 										arguments:[NSArray arrayWithObjects:
                                                    @"-o",
@@ -196,7 +224,7 @@
                                                    @"-d",
                                                    [_wiredManager rootPath],
                                                    NULL]];
-		
+
 		[task waitUntilExit];
 
 		if([task terminationStatus] != 0) {

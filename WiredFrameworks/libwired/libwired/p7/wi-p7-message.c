@@ -352,32 +352,32 @@ static wi_boolean_t _wi_p7_message_get_binary_buffer_for_reading_for_id(wi_p7_me
 			break;
 		}
 		
-		if((uint32_t) (buffer - start) + message_size < sizeof(field_id))
+		if((uint32_t) (buffer - start) + sizeof(field_id) > message_size)
 			break;
 
 		buffer		+= sizeof(field_id);
 		field_size	= wi_p7_spec_field_size(field);
-	
+
 		if(field_size == 0) {
 			field_size = wi_read_swap_big_to_host_int32(buffer, 0);
-			
-			if((uint32_t) (buffer - start) + message_size < sizeof(field_size))
+
+			if((uint32_t) (buffer - start) + sizeof(field_size) > message_size)
 				break;
-			
+
 			buffer += sizeof(field_size);
 		}
-		
+
 		if(field_id == in_field_id) {
 			if(out_buffer)
 				*out_buffer = buffer;
-			
+
 			if(out_field_size)
 				*out_field_size = field_size;
-			
+
 			return true;
 		}
-		
-		if((uint32_t) (buffer - start) + message_size < field_size)
+
+		if((uint32_t) (buffer - start) + field_size > message_size)
 			break;
 		
 		buffer += field_size;
