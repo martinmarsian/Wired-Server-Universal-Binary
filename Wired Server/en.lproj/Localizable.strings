@@ -8,7 +8,7 @@
 "Account with name “admin” has no password set" = "Account with name “admin” has no password set";
 
 /* Uninstall dialog description */
-"All your settings, accounts and other server data will be lost." = "All your settings, accounts and other server data will be lost.";
+"All your settings, accounts and other server data will be lost. Export your settings first to be able to restore your data." = "All your settings, accounts and other server data will be lost. Export your settings first to be able to restore your data.";
 
 /* Uninstall dialog title */
 "Are you sure you want to uninstall Wired Server?" = "Are you sure you want to uninstall Wired Server?";
