@@ -34,6 +34,9 @@
 
 - (NSView *)_viewForTag:(NSInteger)tag;
 - (NSRect)_newFrameForNewContentView:(NSView *)view;
+- (void)_setupFixedHeight;
+- (void)_pinCurrentViewToTop;
+- (NSSize)windowWillResize:(NSWindow *)sender toSize:(NSSize)frameSize;
 
 - (NSString *)_stringForPruneEventsType:(WPPruneEventsType)type;
 - (WPPruneEventsType)_pruneEventsTypeForString:(NSString *)string;
@@ -219,6 +222,8 @@ NSString * const WPHelperBundleID = @"fr.read-write.Wired-Server-Helper";
     
 	
 	[_logManager startReadingFromLog];
+    [self _setupFixedHeight];
+    [self _pinCurrentViewToTop];
 }
 
 - (void)_saveWindowFrame {
@@ -230,8 +235,17 @@ NSString * const WPHelperBundleID = @"fr.read-write.Wired-Server-Helper";
     [self _saveWindowFrame];
 }
 
+- (NSSize)windowWillResize:(NSWindow *)sender toSize:(NSSize)frameSize {
+    // Hoehe ist unveraenderlich fixiert (Advanced-Tab-Hoehe + Chrome).
+    frameSize.height = sender.minSize.height;
+    // Mindestbreite = gespeicherter Mindestwert aus _setupFixedHeight.
+    frameSize.width = MAX(frameSize.width, sender.minSize.width);
+    return frameSize;
+}
+
 - (void)windowDidResize:(NSNotification *)notification {
     [self _saveWindowFrame];
+    [self _pinCurrentViewToTop];
 }
 
 - (void)awakeFromNib {
@@ -403,6 +417,10 @@ NSString * const WPHelperBundleID = @"fr.read-write.Wired-Server-Helper";
 	NSView *previousView = [self _viewForTag:self.currentViewTag];
 	self.currentViewTag = tag;
 
+    // Neue View oben im nutzbaren Bereich positionieren (Leerraum bleibt unten).
+    // Fensterhöhe ist fix — kein Expand/Shrink beim Tab-Wechsel.
+    [self _pinCurrentViewToTop];
+
 	[NSAnimationContext beginGrouping];
 	[[NSAnimationContext currentContext] setDuration:0.1];
 
@@ -415,7 +433,6 @@ NSString * const WPHelperBundleID = @"fr.read-write.Wired-Server-Helper";
 
 	if(tag == 1 && self.portCheckerStatus == WPPortCheckerUnknown)
 		[self checkPortAgain:self];
-
 }
 
 
@@ -1442,6 +1459,35 @@ NSString * const WPHelperBundleID = @"fr.read-write.Wired-Server-Helper";
 	}
 	
     return view;
+}
+
+- (void)_setupFixedHeight {
+    // Fensterhöhe wird anhand des Advanced-Tabs (tag 3) fixiert:
+    // alle Elemente sichtbar, kein Weißraum. Andere Tabs haben ggf.
+    // etwas Leerraum unten; Log-Tab scrollt innerhalb der fixen Höhe.
+    NSView *advancedView = [self _viewForTag:3];
+    CGFloat chromeHeight = NSHeight(self.window.frame) - NSHeight(self.window.contentLayoutRect);
+    CGFloat fixedHeight = NSHeight(advancedView.frame) + chromeHeight;
+
+    NSRect frame = self.window.frame;
+    if (fabs(NSHeight(frame) - fixedHeight) > 0.5) {
+        frame.origin.y += NSHeight(frame) - fixedHeight;
+        frame.size.height = fixedHeight;
+        [self.window setFrame:frame display:NO];
+        [self _saveWindowFrame];
+    }
+    // minSize.height == maxSize.height → Höhe für Benutzer nicht änderbar.
+    // Breite bleibt frei resizable (maxSize.width = FLT_MAX).
+    [self.window setMinSize:NSMakeSize(NSWidth(advancedView.frame), fixedHeight)];
+    [self.window setMaxSize:NSMakeSize(FLT_MAX, fixedHeight)];
+}
+
+- (void)_pinCurrentViewToTop {
+    // View an den oberen Rand des nutzbaren Bereichs (contentLayoutRect) heften,
+    // sodass sie direkt unter der Toolbar beginnt.
+    NSView *view = [self _viewForTag:self.currentViewTag];
+    CGFloat usableHeight = NSHeight(self.window.contentLayoutRect);
+    [view setFrameOrigin:NSMakePoint(0, MAX(0.0, usableHeight - NSHeight(view.frame)))];
 }
 
 - (NSRect)_newFrameForNewContentView:(NSView *)view {
