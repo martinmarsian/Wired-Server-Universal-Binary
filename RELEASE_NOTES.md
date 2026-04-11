@@ -1,5 +1,80 @@
 # Wired Server — Release Notes
 
+## Version 2.5.8
+
+### What's New
+
+---
+
+### Offline Messaging
+
+Users can now send private messages to users who are not currently connected. The server stores the message and delivers it the next time the recipient logs in.
+
+**How it works:**
+
+- When a user sends a private message to an offline recipient, the server stores the message in its SQLite database
+- On the recipient's next login, all pending messages are delivered immediately
+- Messages are delivered in chronological order and removed from the database after delivery
+- The sender sees a confirmation in the private message window; the recipient's client displays the message as a new private message on login
+
+**Requirements:** Both the sender and recipient must be using Wired Server 2.5.8 (or later). A Wired Client update is also required to access offline users from the UI (see Wired Client release notes).
+
+---
+
+### Offline Users Visible in Chat
+
+Connected clients now receive the login name of each user as part of the user list and user join broadcasts. Wired Client uses this information to show known-but-absent users as grayed-out entries in the chat user list, making it easy to start a conversation that will be delivered when the recipient reconnects.
+
+This is a **non-breaking protocol extension** — see *Protocol Changes* below.
+
+---
+
+### Protocol Changes (Non-Breaking)
+
+Version 2.5.8 introduces a minor, fully backward-compatible extension to the Wired protocol:
+
+**New field in `wired.chat.user_list` and `wired.chat.user_join`**
+
+| Field | ID | Type | Description |
+|---|---|---|---|
+| `wired.user.login` | 206 | string (optional) | Login name of the joining/listed user |
+
+Old clients silently ignore this field. Old servers simply do not send it; new clients fall back gracefully and do not show offline stubs in that case.
+
+**New fields for offline messaging**
+
+| Field | ID | Type | Description |
+|---|---|---|---|
+| `wired.message.offline_recipient` | 5002 | string | Login name of the intended offline recipient |
+| `wired.message.offline_sender_nick` | 5003 | string | Display name of the sender for delivery |
+
+**New messages for offline messaging**
+
+| Message | ID | Direction | Description |
+|---|---|---|---|
+| `wired.message.send_offline_message` | 5004 | client → server | Send a message to an offline user |
+| `wired.message.offline_message_delivered` | 5005 | server → client | Deliver a stored message on login |
+
+Old clients connected to a 2.5.8 server will not receive offline messages (the delivery broadcast is silently ignored). Old servers will reject the new message IDs with a protocol error, which Wired Client handles gracefully by falling back to the standard online-only message path.
+
+---
+
+### System Requirements
+
+| | |
+|---|---|
+| **macOS** | 13.0 Ventura or later |
+| **Architecture** | Universal (Apple Silicon + Intel) |
+| **Privileges** | Administrator password required for Install / Start / Stop |
+
+---
+
+### Upgrading from 2.5.7
+
+No migration required. The offline message database table is created automatically on first use (`CREATE TABLE IF NOT EXISTS`). Sparkle will offer the update automatically if **Check for Updates at Launch** is enabled, or click **Check for Updates…** in the Updates tab.
+
+---
+
 ## Version 2.5.7
 
 ### What's New
