@@ -1,4 +1,4 @@
-# Wired Server 2.5.3 — Universal Binary
+# Wired Server — Universal Binary
 
 A macOS application for running a [Wired 2.0](https://github.com/nark/WiredServer) file server and chat server.
 This fork updates the original project for modern macOS (12 Monterey and later) with Apple Silicon support, a system service architecture, and a Universal Binary build.
